@@ -2,6 +2,10 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var router = express.Router();
 var Sequelize = require('sequelize');
+var models = require('../models');
+var shajs = require('sha.js');
+
+const Op = Sequelize.Op;
 
 var jwt = require('jsonwebtoken');
 
@@ -9,41 +13,40 @@ var jwt = require('jsonwebtoken');
 router.use(bodyParser.json());
 
 
-router.post('/login',function(req,res,next){	
-	var username = req.body.username;
-	var password = req.body.password;
-
-	var sequelize = new Sequelize(
-		'hoyAprueboDb',null,null,
-		{
-			dialect: "sqlite",
-    		storage: '/home/jose/www/hoy-apruebo-hg/hoy_apruebo/hoy_apruebo.db',
-		});
-
-	/*sequelize.authenticate()
-	.then(function(){
-		res.send('Conectado¡¡');
+router.post('/singup',function(req,res,next){
+	
+	models.User.create({
+		username : req.body.username,
+		email : req.body.email,
+		password : shajs('sha256').update(req.body.password).digest('hex'),
+	}).then(()=>{
+		res.send('Usuario registrado');		
 	})
-	.catch(function(err){
-		res.status(500).send(err);		
-	});*/
+	.catch((err)=>{
+		res.status(400).json(err);
+	})
+});
 
-	sequelize.query(
-		'SELECT * FROM auth_user WHERE username LIKE :username',
-		{ 
-			type: sequelize.QueryTypes.SELECT,
-			replacements:{
-				username:username,
-			}
-		})
-	.then(function(users){		
-		if(users.length>0){
-			var user=users[0];
+
+router.post('/singin',function(req,res,next){	
+	
+
+	models.User.findOne({
+		where:{
+			password:shajs('sha256').update(req.body.password).digest('hex'),
+			[Op.or]:[
+				{username:req.body.username},
+				{email:req.body.username}
+				],
+		}
+	})
+	.then(function(user){		
+		if(user){		
 			
 			var payload = {};
 
 			payload.username = user.username;
-			payload.email = user.email;			
+			payload.email = user.email;		
 
 			var accessToken = jwt.sign(
 				payload,'secretKey',
@@ -61,13 +64,14 @@ router.post('/login',function(req,res,next){
 
 		}
 		else{
-			res.status(401).send('Nombre de usuario/password incorrecto.');
+			res.status(401).send('Nombre de usuario/email o password incorrecto.');
 		}
 	})
 	.catch(function(err){
 		res.status(500).send('Error en el servidor');		
 	});
 });
+
 
 router.get('/validate',function(req,res,next){
 	jwt.verify(req.get('Authorization'),'secretKey',
