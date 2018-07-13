@@ -4,6 +4,7 @@ var router = express.Router();
 var Sequelize = require('sequelize');
 var models = require('../models');
 var shajs = require('sha.js');
+var config = require('../config');
 
 const Op = Sequelize.Op;
 
@@ -49,12 +50,12 @@ router.post('/singin',function(req,res,next){
 			payload.email = user.email;		
 
 			var accessToken = jwt.sign(
-				payload,'secretKey',
+				payload,config.secretAuth,
 				{ expiresIn: 60 });
 
 			var refreshToken = jwt.sign({
 				accessToken:accessToken,		
-			},'secretKey',{ expiresIn: 3600 });
+			},config.secretAuth,{ expiresIn: 3600 });
 
 			res.json({
 				token_type:'jwt',
@@ -74,7 +75,7 @@ router.post('/singin',function(req,res,next){
 
 
 router.get('/validate',function(req,res,next){
-	jwt.verify(req.get('Authorization'),'secretKey',
+	jwt.verify(req.get('Authorization'),config.secretAuth,
 		function(err,decode){
 			if(err){
 				res.status(400).json(err);
@@ -90,7 +91,7 @@ router.get('/refresh',function(req,res,next){
 	var refreshToken = req.query.refreshToken;	
 
 	jwt.verify(refreshToken,
-		'secretKey',function(err,decode){
+		config.secretAuth,function(err,decode){
 			if(err){
 				res.status(400).send(err.message);
 			}			
@@ -98,7 +99,7 @@ router.get('/refresh',function(req,res,next){
 				res.status(400).send('Invalid accessToken');
 			}
 			else{				
-				jwt.verify(accessToken,'secretKey',
+				jwt.verify(accessToken,config.secretAuth,
 					{ignoreExpiration:true},
 					function(err,decode){
 					if(err){
@@ -111,12 +112,12 @@ router.get('/refresh',function(req,res,next){
 						};
 
 						var newAccessToken = jwt.sign(
-						payload,'secretKey',
+						payload,config.secretAuth,
 						{ expiresIn: 60 });
 
 						var newRefreshToken = jwt.sign({
 							accessToken:newAccessToken,		
-						},'secretKey',{ expiresIn: 3600 });
+						},config.secretAuth,{ expiresIn: 3600 });
 
 						res.json({
 							token_type:'jwt',

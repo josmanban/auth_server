@@ -1,8 +1,14 @@
 var Sequelize = require('sequelize');
+var config = require('../config');
+
+
 var sequelize = new Sequelize(
-	'auth_server','test','perro292',{
-		host: 'localhost',
-	    port: 3306,
+	config.databases[config.currentdb].name,
+	config.databases[config.currentdb].user,
+	config.databases[config.currentdb].password,
+	{
+		host: config.databases[config.currentdb].host,
+	    port: config.databases[config.currentdb].port,
 	    dialect: 'mysql'
 	});
 
