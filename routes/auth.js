@@ -115,7 +115,7 @@ router.get('/refresh',function(req,res,next){
 						{ expiresIn: 60 });
 
 						var newRefreshToken = jwt.sign({
-							accessToken:accessToken,		
+							accessToken:newAccessToken,		
 						},'secretKey',{ expiresIn: 3600 });
 
 						res.json({
