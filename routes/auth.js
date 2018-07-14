@@ -1,14 +1,12 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var router = express.Router();
-var Sequelize = require('sequelize');
-var models = require('../models');
-var shajs = require('sha.js');
+
 var config = require('../config');
 
 var services = require('../services');
 
-const Op = Sequelize.Op;
+
 
 var jwt = require('jsonwebtoken');
 
@@ -16,16 +14,19 @@ var jwt = require('jsonwebtoken');
 router.use(bodyParser.json());
 
 router.post('/singup',function(req,res,next){
-	registerUser(req.body.username,req.body.email,req.password)
-	.then(message => res.send(message));
+	services.auth.registerUser(
+		req.body.username,
+		req.body.email,
+		req.body.password)
+	.then(message => res.send(message))
 	.catch(err => res.status(400).send(err));
 });
 
 
 router.post('/singin',function(req,res,next){
-	loginUser(req.body.username,req.body.password)
+	services.auth.loginUser(req.body.username,req.body.password)
 	.then(data=>res.send(data))
-	.catch(err=>res.status(err.status).send(err.message));
+	.catch(err=>res.status(err.status).send(err.message));	
 });
 
 
@@ -64,8 +65,7 @@ router.get('/refresh',function(req,res,next){
 					if(err){
 						res.status(400).send('Invalid accessToken');		
 					}else{
-
-						getAuthTokens({
+						services.auth.getAuthTokens({
 							username : decode.username,
 							email : decode.email,
 						})
@@ -76,9 +76,9 @@ router.get('/refresh',function(req,res,next){
 								refresh_token : rt,
 							});
 						})
-						.catch(err){
+						.catch(err => {
 							res.status(500).send(err);
-						}
+						});
 					}
 				});				
 			}

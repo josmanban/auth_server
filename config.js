@@ -1,6 +1,9 @@
 module.exports = {
 	secretAuth:'eaea123',
 
+    accessTokenExpireIn:60,
+    refreshTokenExpireIn:3600,
+
 	currentdb:'auth_server',
 
 	databases:{
