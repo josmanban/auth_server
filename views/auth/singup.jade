@@ -1,0 +1,53 @@
+extends ../layout
+block assets		
+	script.
+		$(document).ready(function(){
+			let send = $("#send");				
+
+			if(send){
+				$(send).click(()=>{
+
+					data = {							
+						username : $("#username").val(),
+						password : $("#password").val(),
+						email : $("#email").val(),
+						repeatedPassword : $("#repeatedPassword").val(),
+					}
+
+					if(validate(data)){
+						$.post({
+							url: "/auth/singup",
+							data: data,								
+						})
+						.done( data =>{
+							alert("Usuario registrado correctamente");
+						})
+						.fail( (err) => {								
+							alert(err.responseText);
+						})
+						;
+					}
+
+				});
+			}
+		});
+
+		let validate = data =>{
+			return true;
+		}
+
+block content
+	div
+		label email					
+		input#email(type="text" name="email")
+	div
+		label username:
+		input#username(type="text" name="username")
+	div
+		label password:
+		input#password(type="password" name="password")
+	div
+		label repeated password:
+		input#repeatedPassword(type="password")
+	div
+		input#send(type="submit" value="Sing Up")

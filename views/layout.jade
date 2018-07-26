@@ -1,7 +1,10 @@
 doctype html
 html
-  head
-    title= title
-    link(rel='stylesheet', href='/stylesheets/style.css')
-  body
-    block content
+    head
+        title= title
+        script(src="/assets/jquery/jquery.min.js")
+        link(rel='stylesheet', href='/stylesheets/style.css')
+        block assets
+    body
+        div#container
+        block content

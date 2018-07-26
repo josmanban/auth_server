@@ -13,15 +13,21 @@ var jwt = require('jsonwebtoken');
 
 router.use(bodyParser.json());
 
+
 router.post('/singup',function(req,res,next){
 	services.auth.registerUser(
 		req.body.username,
 		req.body.email,
 		req.body.password)
-	.then(message => res.send(message))
+	.then(message => {res.send(message)})
 	.catch(err => res.status(400).send(err));
 });
 
+router.get('/singup',function(req,res,next){
+	res.render('auth/singup',{
+		title:'Sing Up'
+	});
+});
 
 router.post('/singin',function(req,res,next){
 	services.auth.loginUser(req.body.username,req.body.password)
@@ -29,6 +35,11 @@ router.post('/singin',function(req,res,next){
 	.catch(err=>res.status(err.status).send(err.message));	
 });
 
+router.get('/singin', function(req,res,next){
+	res.render('auth/singin',{
+		title:'Sing In'
+	});
+});
 
 router.get('/validate',function(req,res,next){
 	jwt.verify(
@@ -83,6 +94,25 @@ router.get('/refresh',function(req,res,next){
 				});				
 			}
 		});
+});
+
+router.post('/changePassword',(req,res,next)=>{
+	services.auth.changePassword(
+		req.get('Authorization'),
+		req.body.password)
+	.then(()=>{
+		res.json({message: "Password updated"});
+	})
+	.catch(err=>{
+		console.log(err);
+		res.status("400").json({message:err});
+	});
+});
+
+router.get('/changePassword',(req,res,next)=>{
+	res.render('auth/changePassword',{
+		title:"Change Password"
+	});
 });
 
 module.exports = router;

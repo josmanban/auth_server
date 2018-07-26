@@ -57,6 +57,34 @@ module.exports = () => {
 		});
 	};
 
+	var changePassword = (accessToken,newPassword)=>{
+		return new Promise((resolve,reject)=>{
+			if(!newPassword)
+				reject(err.message?err.message:err);
+			jwt.verify(
+				accessToken,
+				config.secretAuth,
+				(err,decode)=>{
+					if(err)
+						reject(err.message?err.message:err);
+					
+					models.User.update({
+						password:shajs('sha256').update(newPassword).digest('hex')
+					},{
+						where:{
+							username: decode.username
+						}
+					})
+					.then(()=>{
+						resolve(true);
+					}).catch((err) => {
+						reject(err.message?err.message:err);
+					});
+				}
+			);
+		});
+	};
+
 	var getAccesToken = (user)=>{
 		return new Promise((resolve,reject) => {
 			try{
@@ -120,5 +148,6 @@ module.exports = () => {
 		getAccesToken:getAccesToken,
 		getRefreshToken:getRefreshToken,
 		getAuthTokens:getAuthTokens,
+		changePassword:changePassword
 	}
 };

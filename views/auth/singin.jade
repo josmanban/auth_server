@@ -1,0 +1,35 @@
+extends ../layout
+block assets
+    script.
+        $(document).ready(()=>{            
+            $("#singin").click(function(){
+                $.post({
+                    url:'/auth/singin',
+                    data: {
+                        username:$('#email').val(),
+                        password: $('#password').val()
+                    }
+                })
+                .done((data)=>{                    
+                    alert('Sing In¡¡');
+                    localStorage.setItem('accessToken',data.access_token);
+                    localStorage.setItem('refreshToken',data.refresh_token);
+                    $('input').val("");
+
+                })
+                .fail((err)=>{                    
+                    alert(err.responseText);
+                });
+            });
+        });
+
+block content
+    div#singInForm        
+        div
+            label username/email:
+            input#email(type="text" name="email")
+        div
+            label password:
+            input#password(type="password" name="password")
+        div
+            button#singin Sing In

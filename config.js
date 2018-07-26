@@ -10,7 +10,7 @@ module.exports = {
 		auth_server:{
 			engine:'mysql',
 			name:"auth_server",			
-			user:'test',
+			user:'root',
 			password:'perro292',
 			host:'localhost',
 			port:3306,
