@@ -4,20 +4,37 @@ module.exports = () => {
 	var jwt = require('jsonwebtoken');
 	var models = require('../models');
 	var shajs = require('sha.js');
+
+	var validationError = Sequelize.ValidationError;
+
 	const Op = Sequelize.Op;
 	var config = require('../config');
 
-	var registerUser = (username,email,password)=>{
+	var registerUser = (username,email,password,repeatedPassword)=>{
+
 		return new Promise((resolve,reject) => {
+			if(password!=repeatedPassword){				
+				reject({
+					status:400,
+					message:"Passwords do not match",
+					errors:[];
+				});
+			}
+
 			models.User.create({
 				username : username,
 				email : email,
 				password : shajs('sha256').update(password).digest('hex'),
+				isActive: false,
 			}).then(()=>{
 				resolve('Usuario registrado');		
 			})
 			.catch((err) => {
-				reject(err.message?err.message:err);
+				reject({
+					status: err instanceof validationError?400:500,
+					message: err.message?err.message:err,
+					errors:err instanceof validationError?err.errors:[];
+				});
 			});		
 		});
 	};
@@ -33,7 +50,7 @@ module.exports = () => {
 						],
 				}
 			})
-			.then(function(user){		
+			.then(function(user){
 				if(user){
 					return getAuthTokens(user);
 				}
@@ -59,8 +76,14 @@ module.exports = () => {
 
 	var changePassword = (accessToken,newPassword)=>{
 		return new Promise((resolve,reject)=>{
-			if(!newPassword)
-				reject(err.message?err.message:err);
+			if(!newPassword){
+				reject({
+					status:400,
+					message:"Passwords do not match",
+					errors:[];
+				});				
+			}
+
 			jwt.verify(
 				accessToken,
 				config.secretAuth,
@@ -78,7 +101,10 @@ module.exports = () => {
 					.then(()=>{
 						resolve(true);
 					}).catch((err) => {
-						reject(err.message?err.message:err);
+						reject({
+							status:500,
+							message:err.message?err.message:err
+						});
 					});
 				}
 			);

@@ -2,6 +2,9 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var router = express.Router();
 
+var Sequelize = require('sequelize');
+var validationError = Sequelize.ValidationError;
+
 var config = require('../config');
 
 var services = require('../services');
@@ -18,9 +21,14 @@ router.post('/singup',function(req,res,next){
 	services.auth.registerUser(
 		req.body.username,
 		req.body.email,
-		req.body.password)
-	.then(message => {res.send(message)})
-	.catch(err => res.status(400).send(err));
+		req.body.password,
+		req.body.repeatedPassword)
+	.then(message => {
+		res.json({message:message});
+	})
+	.catch(err => {		
+		res.status(err.status).json(err);
+	});
 });
 
 router.get('/singup',function(req,res,next){
@@ -49,7 +57,7 @@ router.get('/validate',function(req,res,next){
 			if(err){
 				res.status(400).json(err);
 			}else{
-				res.status(200).send('Token válido');
+				res.json({message:'Token válido'});
 			}
 		}
 	);
@@ -105,7 +113,7 @@ router.post('/changePassword',(req,res,next)=>{
 	})
 	.catch(err=>{
 		console.log(err);
-		res.status("400").json({message:err});
+		res.status(err.status).json({message:err.message});
 	});
 });
 
